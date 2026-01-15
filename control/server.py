@@ -512,25 +512,51 @@ class GatewayServer:
             server_cert = self.config.get("mtls", "server_cert")
             client_cert = self.config.get("mtls", "client_cert")
             self.logger.debug(f"Trying to open server key file: {server_key}")
-            with open(server_key, "rb") as f:
-                private_key = f.read()
+            try:
+                with open(server_key, "rb") as f:
+                    private_key = f.read()
+                self.logger.debug(f"Successfully loaded server key from {server_key}")
+            except Exception:
+                self.logger.exception(f"Error reading server key file {server_key}")
+                raise
+
             self.logger.debug(f"Trying to open server cert file: {server_cert}")
-            with open(server_cert, "rb") as f:
-                server_crt = f.read()
+            try:
+                with open(server_cert, "rb") as f:
+                    server_crt = f.read()
+                self.logger.debug(f"Successfully loaded server cert from {server_cert}")
+            except Exception:
+                self.logger.exception(f"Error reading server cert file {server_cert}")
+                raise
+
             self.logger.debug(f"Trying to open client cert file: {client_cert}")
-            with open(client_cert, "rb") as f:
-                client_crt = f.read()
+            try:
+                with open(client_cert, "rb") as f:
+                    client_crt = f.read()
+                self.logger.debug(f"Successfully loaded client cert from {client_cert}")
+            except Exception:
+                self.logger.exception(f"Error reading client cert file {client_cert}")
+                raise
 
             # Create appropriate server credentials
-            server_credentials = grpc.ssl_server_credentials(
-                private_key_certificate_chain_pairs=[(private_key, server_crt)],
-                root_certificates=client_crt,
-                require_client_auth=True,
-            )
+            try:
+                server_credentials = grpc.ssl_server_credentials(
+                    private_key_certificate_chain_pairs=[(private_key, server_crt)],
+                    root_certificates=client_crt,
+                    require_client_auth=True,
+                )
+                self.logger.debug("Successfully created mTLS server credentials")
+            except Exception:
+                self.logger.exception("Error creating mTLS server credentials")
+                raise
 
             # Add secure port using credentials
-            server.add_secure_port(
-                address, server_credentials)
+            try:
+                server.add_secure_port(address, server_credentials)
+                self.logger.info(f"mTLS server listening on {address}")
+            except Exception:
+                self.logger.exception(f"Error adding secure port {address}")
+                raise
         else:
             # Authentication is not enabled
             server.add_insecure_port(address)
