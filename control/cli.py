@@ -235,28 +235,28 @@ class GatewayClient:
             if out_func:
                 out_func("Enable server auth since both --client-key and "
                          "--client-cert are provided")
-            
+
             self.logger.debug(f"Loading client key from {client_key.name}")
             try:
                 with client_cert as f:
                     client_cert = f.read()
-                self.logger.debug(f"Successfully loaded client cert")
+                self.logger.debug("Successfully loaded client cert")
             except Exception as e:
                 self.cli.parser.error(f"Error reading client cert: {e}")
-                
+
             try:
                 with client_key as f:
                     client_key = f.read()
-                self.logger.debug(f"Successfully loaded client key")
+                self.logger.debug("Successfully loaded client key")
             except Exception as e:
                 self.cli.parser.error(f"Error reading client key: {e}")
-                
+
             if server_cert:
                 self.logger.debug(f"Loading server cert from {server_cert.name}")
                 try:
                     with server_cert as f:
                         server_cert = f.read()
-                    self.logger.debug(f"Successfully loaded server cert")
+                    self.logger.debug("Successfully loaded server cert")
                 except Exception as e:
                     self.cli.parser.error(f"Error reading server cert: {e}")
             else:
@@ -273,8 +273,9 @@ class GatewayClient:
                 self.cli.parser.error(f"Error creating mTLS client credentials: {e}")
                 
             try:
-                channel = grpc.secure_channel(server, credentials,
-                                              options=[('grpc.max_receive_message_length', msg_len)])
+                channel = grpc.secure_channel(
+                    server, credentials,
+                    options=[('grpc.max_receive_message_length', msg_len)])
                 self.logger.info(f"Successfully connected to mTLS server at {server}")
             except Exception as e:
                 self.cli.parser.error(f"Error connecting to mTLS server at {server}: {e}")
